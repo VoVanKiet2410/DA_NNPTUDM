@@ -2,16 +2,19 @@ const News = require('../schemas/News');
 const ApiResponse = require('../utils/ApiResponse');
 
 // Add news
-exports.addNews = async (req, res) => {
+exports.createNews = async (req, res) => {
   try {
-    const { title, content, author } = req.body;
-    const imageUrl = req.file ? req.file.path : null;
-
-    const news = new News({ title, content, author, imageUrl });
-    await news.save();
+    
+    const { title, content, imageUrl } = req.body;
+    const news = await News.create({
+      title,
+      content,
+      imageUrl,
+    });
 
     res.status(201).json(new ApiResponse(201, 'News added successfully', news));
   } catch (error) {
+    console.error("Error adding news:", error);
     res.status(500).json(new ApiResponse(500, 'Error adding news', error.message));
   }
 };
@@ -29,8 +32,7 @@ exports.getAllNews = async (req, res) => {
 // Get news by ID
 exports.getNewsById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const news = await News.findById(id);
+    const news = await News.findById(req.params.id);
     if (!news) {
       return res.status(404).json(new ApiResponse(404, 'News not found'));
     }
@@ -44,12 +46,11 @@ exports.getNewsById = async (req, res) => {
 exports.updateNews = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, author } = req.body;
-    const imageUrl = req.file ? req.file.path : null;
+    const { title, content, imageUrl } = req.body;
 
     const news = await News.findByIdAndUpdate(
       id,
-      { title, content, author, imageUrl },
+      { title, content, imageUrl },
       { new: true }
     );
     if (!news) {

@@ -22,7 +22,6 @@ const BloodDonationUnitsAdd = () => {
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
-      // Tạo FormData để gửi file
       const formData = {
         name: values.unitsName,
         location: values.location,

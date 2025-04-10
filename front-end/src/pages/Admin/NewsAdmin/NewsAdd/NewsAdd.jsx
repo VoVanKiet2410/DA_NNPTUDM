@@ -1,28 +1,58 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Flex, Form, Input, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import newsService from "../../../../service/newsService";
 
 const NewsAdd = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (values) => {
-    const { title, content, photo } = values;
-    console.log({
-      title,
-      content,
-      photo: photo[0]?.originFileObj, // Log file object for debugging
-      author: "ChiTin", // Mock author
-    });
+  const onSubmit = async (values) => {
+    try {
+      setLoading(true);
+      const { title, content, photo } = values;
 
-    // Simulate successful submission
-    message.success("Tin tức đã được thêm!!!");
-    setTimeout(() => {
-      navigate("/admin/news");
-    }, 1000); // Simulate a delay of 1 second before navigation
+      // Đọc file ảnh thành base64
+      let imageUrl = "";
+      if (photo && photo[0]?.originFileObj) {
+        imageUrl = await convertFileToBase64(photo[0].originFileObj);
+      }
+
+      // Đảm bảo URL API đúng
+      const response = await newsService.createNews({
+        title,
+        content,
+        imageUrl: imageUrl,
+      });
+      if (response.success) {
+        message.success("Thêm tin tức thành công!");
+        navigate("/admin/news");
+      } else {
+        message.error(response.message || "Không thể thêm đơn vị");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      message.error(
+        `Có lỗi xảy ra khi thêm tin tức: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Hàm xử lý file upload
+  // Hàm chuyển file thành base64
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const normFile = (e) => {
     if (Array.isArray(e)) {
       return e;
@@ -50,7 +80,7 @@ const NewsAdd = () => {
           label="Nội dung bài viết"
           rules={[{ required: true, message: "Không được để trống" }]}
         >
-          <Input.TextArea placeholder="Nhập nội dung bài viết" />
+          <Input.TextArea placeholder="Nhập nội dung bài viết" rows={6} />
         </Form.Item>
 
         <Form.Item
@@ -70,7 +100,7 @@ const NewsAdd = () => {
           </Upload>
         </Form.Item>
 
-        <Button htmlType="submit" type="primary">
+        <Button htmlType="submit" type="primary" loading={loading}>
           Gửi
         </Button>
       </Form>

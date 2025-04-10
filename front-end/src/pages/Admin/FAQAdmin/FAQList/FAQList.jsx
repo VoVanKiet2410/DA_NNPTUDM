@@ -1,115 +1,169 @@
-import { Flex, Input, Popconfirm, Table, notification } from "antd";
-import React, { useMemo, useState, useEffect } from "react";
-import { SearchOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Flex, Input, Popconfirm, Table, notification, Button } from "antd";
+import React, { useState, useEffect } from "react";
+import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
 import { ROUTE_PATH } from "../../../../constants/routes";
+import faqService from "../../../../service/faqService";
 
 const FAQList = () => {
-  // Quản lý phân trang
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [faqs, setFaqs] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [totalFaqs, setTotalFaqs] = useState(0);
 
-  // Mock data to simulate FAQ list
+  // Fetch FAQ data
+  const fetchFaqs = async () => {
+    try {
+      setLoading(true);
+      const response = await faqService.getAllFAQs();
+      if (response && response.data) {
+        setFaqs(response.data);
+        setTotalFaqs(response.data.length);
+      }
+    } catch (error) {
+      notification.error({
+        message: "Lỗi",
+        description: error.message || "Đã xảy ra lỗi khi tải dữ liệu FAQ.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const mockFaqs = [
-      { id: 1, title: "FAQ 1", description: "Description for FAQ 1" },
-      { id: 2, title: "FAQ 2", description: "Description for FAQ 2" },
-      { id: 3, title: "FAQ 3", description: "Description for FAQ 3" },
-      { id: 4, title: "FAQ 4", description: "Description for FAQ 4" },
-      { id: 5, title: "FAQ 5", description: "Description for FAQ 5" },
-    ];
-    setFaqs(mockFaqs); // Set mock data
+    fetchFaqs();
   }, []);
 
-  // Cột cho bảng
-  const columns = useMemo(() => {
-    return [
-      {
-        title: "Tiêu đề",
-        key: "title",
-        dataIndex: "title",
-      },
-      {
-        title: "Mô tả",
-        key: "description",
-        dataIndex: "description",
-        ellipsis: true,
-      },
-      {
-        title: "Hành động",
-        key: "actions",
-        render: (_, record) => {
-          return (
-            <Flex gap="12px">
-              <Link
-                className="text-blue-500"
-                to={ROUTE_PATH.FAQ_ADMIN_EDIT(record.id)}
-              >
-                Chỉnh sửa
-              </Link>
+  // Filter faqs based on search text
+  const filteredFaqs = faqs.filter(
+    (faq) =>
+      faq.title.toLowerCase().includes(searchText.toLowerCase()) ||
+      faq.description.toLowerCase().includes(searchText.toLowerCase())
+  );
 
-              <Popconfirm
-                title="Xóa câu hỏi này?"
-                description="Bạn có chắc chắn muốn xóa câu hỏi này không?"
-                onConfirm={() => handleDelete(record.id)} // Gọi hàm xóa
-              >
-                <p className="text-red-500 cursor-pointer">Xóa</p>
-              </Popconfirm>
-            </Flex>
-          );
-        },
-      },
-    ];
-  }, []);
+  // Columns for the table
+  const columns = [
+    {
+      title: "STT",
+      key: "index",
+      width: 80,
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
+    },
+    {
+      title: "Tiêu đề",
+      key: "title",
+      dataIndex: "title",
+    },
+    {
+      title: "Mô tả",
+      key: "description",
+      dataIndex: "description",
+      ellipsis: true,
+    },
+    {
+      title: "Hành động",
+      key: "actions",
+      width: 200,
+      render: (_, record) => {
+        return (
+          <Flex gap="12px">
+            <Link
+              className="text-blue-500"
+              to={ROUTE_PATH.FAQ_ADMIN_EDIT(record._id)}
+            >
+              Chỉnh sửa
+            </Link>
 
-  // Hàm xử lý phân trang
+            <Popconfirm
+              title="Xóa câu hỏi này?"
+              description="Bạn có chắc chắn muốn xóa câu hỏi này không?"
+              onConfirm={() => handleDelete(record._id)}
+              okText="Có"
+              cancelText="Không"
+            >
+              <span className="text-red-500 cursor-pointer">Xóa</span>
+            </Popconfirm>
+          </Flex>
+        );
+      },
+    },
+  ];
+
+  // Handle pagination
   const handleTableChange = (pagination) => {
     setCurrentPage(pagination.current);
     setPageSize(pagination.pageSize);
   };
 
-  // Hàm xử lý xóa FAQ (mô phỏng)
-  const handleDelete = (id) => {
-    setTimeout(() => {
-      setFaqs((prevFaqs) => prevFaqs.filter((faq) => faq.id !== id)); // Cập nhật danh sách FAQ
+  // Handle delete FAQ
+  const handleDelete = async (id) => {
+    try {
+      await faqService.deleteFAQs(id);
       notification.success({
         message: "Thành công",
-        description: "FAQ đã được xóa.",
+        description: "FAQ đã được xóa thành công.",
       });
-    }, 500); // Simulate a delay of 0.5 seconds
+      fetchFaqs(); // Refresh the list after deletion
+    } catch (error) {
+      notification.error({
+        message: "Lỗi",
+        description: error.message || "Đã xảy ra lỗi khi xóa FAQ.",
+      });
+    }
+  };
+
+  // Handle adding new FAQ
+  const handleAddFaq = () => {
+    navigate(ROUTE_PATH.FAQ_ADMIN_ADD);
   };
 
   return (
-    <>
-      <Flex align="center" justify="space-between">
+    <div className="p-5">
+      <Flex align="center" justify="space-between" className="mb-4">
         <h1 className="font-semibold text-xl">Danh sách FAQ</h1>
 
-        <Input
-          placeholder="Tìm kiếm..."
-          className="w-64"
-          suffix={<SearchOutlined />}
-          size="large"
-        />
+        <Flex gap="12px">
+          <Input
+            placeholder="Tìm kiếm..."
+            className="w-64"
+            suffix={<SearchOutlined />}
+            size="large"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            size="large"
+            onClick={handleAddFaq}
+            className="bg-[#1890ff]"
+          >
+            Thêm mới
+          </Button>
+        </Flex>
       </Flex>
 
       <Table
         columns={columns}
-        className="mt-4"
-        scroll={{ x: 1200 }}
-        dataSource={faqs} // Dữ liệu từ state faqs
-        rowKey="id"
-        // Phân trang
+        dataSource={filteredFaqs}
+        rowKey="_id"
+        loading={loading}
         pagination={{
           current: currentPage,
           pageSize: pageSize,
-          total: faqs.length, // Tổng số bản ghi
+          total: filteredFaqs.length,
+          showSizeChanger: true,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} trong tổng số ${total} mục`,
         }}
         onChange={handleTableChange}
+        className="bg-white rounded-lg shadow"
       />
-    </>
+    </div>
   );
 };
 

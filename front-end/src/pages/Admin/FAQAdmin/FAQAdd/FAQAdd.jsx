@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form, Input, notification, Row, Col, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
+import faqService from "../../../../service/faqService";
 
 const { Title } = Typography;
 
@@ -21,17 +22,23 @@ const FaqAdd = () => {
     });
   };
 
-  const handleSubmit = () => {
-    setLoading(true);
-    // Simulate a successful submission without backend
-    setTimeout(() => {
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      await faqService.createFAQs(faqData);
       notification.success({
-        message: "Success",
-        description: "FAQ added successfully!",
+        message: "Thành công",
+        description: "FAQ đã được thêm thành công!",
       });
       navigate("/admin/faqs");
+    } catch (error) {
+      notification.error({
+        message: "Lỗi",
+        description: error.message || "Đã xảy ra lỗi khi thêm FAQ.",
+      });
+    } finally {
       setLoading(false);
-    }, 1000); // Simulate a delay of 1 second
+    }
   };
 
   return (
@@ -46,7 +53,7 @@ const FaqAdd = () => {
         className="bg-white p-5 rounded-lg shadow-lg"
       >
         <Row gutter={[16, 16]}>
-          <Col span={12}>
+          <Col span={24}>
             <Form.Item
               name="title"
               label="Tiêu Đề"
@@ -60,7 +67,7 @@ const FaqAdd = () => {
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={24}>
             <Form.Item
               name="description"
               label="Mô Tả"

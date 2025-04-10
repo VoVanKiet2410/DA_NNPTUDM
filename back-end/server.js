@@ -5,6 +5,8 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const donationUnitRoutes = require("./routes/donationUnitRoutes");
 const eventRoutes = require("./routes/eventRoutes");
+const newsRoutes = require('./routes/newsRoutes');
+const faqRoutes = require('./routes/faqRoutes');
 
 const app = express();
 
@@ -47,6 +49,17 @@ mongoose
       await mongoose.connection.db.createCollection("appointments");
       console.log("Created appointments collection");
     }
+
+    // Tạo collection news nếu chưa tồn tại
+    if (!collectionNames.includes("news")) {
+      await mongoose.connection.db.createCollection("news");
+      console.log("Created news collection");
+    }
+
+    if (!collectionNames.includes("faqs")) {
+      await mongoose.connection.db.createCollection("faqs");
+      console.log("Created faqs collection");
+    }
   })
   .catch((error) => {
     console.error("MongoDB connection error:", error);
@@ -57,6 +70,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/donation-units", donationUnitRoutes);
 app.use("/api/events", eventRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/faq', faqRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
