@@ -26,31 +26,26 @@ mongoose
   .then(async () => {
     console.log("Connected to MongoDB");
 
-    // Kiểm tra và tạo collections
     const collections = await mongoose.connection.db
       .listCollections()
       .toArray();
     const collectionNames = collections.map((col) => col.name);
 
-    // Tạo collection events nếu chưa tồn tại
     if (!collectionNames.includes("events")) {
       await mongoose.connection.db.createCollection("events");
       console.log("Created events collection");
     }
 
-    // Tạo collection donationunits nếu chưa tồn tại
     if (!collectionNames.includes("donationunits")) {
       await mongoose.connection.db.createCollection("donationunits");
       console.log("Created donationunits collection");
     }
 
-    // Tạo collection appointments nếu chưa tồn tại
     if (!collectionNames.includes("appointments")) {
       await mongoose.connection.db.createCollection("appointments");
       console.log("Created appointments collection");
     }
 
-    // Tạo collection news nếu chưa tồn tại
     if (!collectionNames.includes("news")) {
       await mongoose.connection.db.createCollection("news");
       console.log("Created news collection");
@@ -73,7 +68,6 @@ app.use("/api/events", eventRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/faq', faqRoutes);
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({

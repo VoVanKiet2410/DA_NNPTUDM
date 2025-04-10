@@ -1,7 +1,6 @@
 const BloodInventory = require('../schemas/BloodInventory');
 const ApiResponse = require('../utils/ApiResponse');
 
-// Get all blood inventories
 exports.getAllBloodInventories = async (req, res) => {
   try {
     const inventories = await BloodInventory.find();
@@ -11,7 +10,6 @@ exports.getAllBloodInventories = async (req, res) => {
   }
 };
 
-// Add a new blood inventory
 exports.addBloodInventory = async (req, res) => {
   try {
     const inventoryData = req.body;
@@ -23,7 +21,6 @@ exports.addBloodInventory = async (req, res) => {
   }
 };
 
-// Update a blood inventory
 exports.updateBloodInventory = async (req, res) => {
   try {
     const { id } = req.params;
@@ -38,7 +35,6 @@ exports.updateBloodInventory = async (req, res) => {
   }
 };
 
-// Delete a blood inventory
 exports.deleteBloodInventory = async (req, res) => {
   try {
     const { id } = req.params;

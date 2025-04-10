@@ -4,7 +4,6 @@ import { API_URL } from "../constants/api";
 const EVENT_URL = `${API_URL}/events`;
 
 const eventService = {
-  // Lấy danh sách sự kiện
   getAllEvents: async () => {
     try {
       const response = await axios.get(EVENT_URL);
@@ -14,7 +13,6 @@ const eventService = {
     }
   },
 
-  // Lấy chi tiết một sự kiện
   getEventById: async (id) => {
     try {
       const response = await axios.get(`${EVENT_URL}/${id}`);
@@ -24,7 +22,6 @@ const eventService = {
     }
   },
 
-  // Tạo sự kiện mới
   addEvent: async (eventData) => {
     try {
       const response = await axios.post(EVENT_URL, eventData);
@@ -34,7 +31,6 @@ const eventService = {
     }
   },
 
-  // Cập nhật sự kiện
   updateEvent: async (id, eventData) => {
     try {
       const response = await axios.put(`${EVENT_URL}/${id}`, eventData);
@@ -44,7 +40,6 @@ const eventService = {
     }
   },
 
-  // Xóa sự kiện
   deleteEvent: async (id) => {
     try {
       const response = await axios.delete(`${EVENT_URL}/${id}`);
@@ -54,7 +49,6 @@ const eventService = {
     }
   },
 
-  // Lấy sự kiện theo đơn vị hiến máu
   getEventsByDonationUnit: async (donationUnitId) => {
     try {
       const response = await axios.get(

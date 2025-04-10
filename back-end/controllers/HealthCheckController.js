@@ -1,7 +1,6 @@
 const Healthcheck = require('../schemas/Healthcheck');
 const ApiResponse = require('../utils/ApiResponse');
 
-// Add a health check
 exports.addHealthCheck = async (req, res) => {
   try {
     const healthCheckData = req.body;
@@ -13,7 +12,6 @@ exports.addHealthCheck = async (req, res) => {
   }
 };
 
-// Get all health checks
 exports.getAllHealthChecks = async (req, res) => {
   try {
     const healthChecks = await Healthcheck.find();

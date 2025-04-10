@@ -2,7 +2,6 @@ const Event = require("../schemas/Event");
 const DonationUnit = require("../schemas/DonationUnit");
 const ApiResponse = require("../utils/ApiResponse");
 
-// Lấy tất cả sự kiện
 exports.getAllEvents = async (req, res) => {
   try {
     const events = await Event.find()
@@ -22,7 +21,6 @@ exports.getAllEvents = async (req, res) => {
   }
 };
 
-// Lấy một sự kiện theo ID
 exports.getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id).populate(
@@ -50,10 +48,8 @@ exports.getEventById = async (req, res) => {
   }
 };
 
-// Tạo sự kiện mới
 exports.createEvent = async (req, res) => {
   try {
-    // Kiểm tra đơn vị hiến máu có tồn tại
     const donationUnit = await DonationUnit.findById(req.body.donationUnit);
     if (!donationUnit) {
       return res.status(404).json({
@@ -62,7 +58,6 @@ exports.createEvent = async (req, res) => {
       });
     }
 
-    // Kiểm tra thời gian kết thúc > thời gian bắt đầu
     const startTime = new Date(`1970-01-01T${req.body.eventStartTime}`);
     const endTime = new Date(`1970-01-01T${req.body.eventEndTime}`);
     if (endTime <= startTime) {
@@ -75,7 +70,6 @@ exports.createEvent = async (req, res) => {
     const event = new Event(req.body);
     await event.save();
 
-    // Cập nhật mảng events trong DonationUnit
     await DonationUnit.findByIdAndUpdate(
       req.body.donationUnit,
       { $push: { events: event._id } },
@@ -101,7 +95,6 @@ exports.createEvent = async (req, res) => {
   }
 };
 
-// Cập nhật sự kiện
 exports.updateEvent = async (req, res) => {
   try {
     if (req.body.donationUnit) {
@@ -125,7 +118,6 @@ exports.updateEvent = async (req, res) => {
       }
     }
 
-    // Kiểm tra sự kiện có tồn tại không
     const existingEvent = await Event.findById(req.params.id);
     if (!existingEvent) {
       return res.status(404).json({
@@ -134,17 +126,14 @@ exports.updateEvent = async (req, res) => {
       });
     }
 
-    // Nếu đơn vị hiến máu thay đổi, cập nhật mảng events trong DonationUnit
     if (
       req.body.donationUnit &&
       req.body.donationUnit !== existingEvent.donationUnit.toString()
     ) {
-      // Xóa event khỏi đơn vị cũ
       await DonationUnit.findByIdAndUpdate(existingEvent.donationUnit, {
         $pull: { events: existingEvent._id },
       });
 
-      // Thêm event vào đơn vị mới
       await DonationUnit.findByIdAndUpdate(req.body.donationUnit, {
         $push: { events: existingEvent._id },
       });
@@ -170,7 +159,6 @@ exports.updateEvent = async (req, res) => {
   }
 };
 
-// Xóa sự kiện
 exports.deleteEvent = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -181,7 +169,6 @@ exports.deleteEvent = async (req, res) => {
       });
     }
 
-    // Kiểm tra xem sự kiện đã có người đăng ký chưa
     if (event.currentRegistrations > 0) {
       return res.status(400).json({
         success: false,
@@ -189,7 +176,6 @@ exports.deleteEvent = async (req, res) => {
       });
     }
 
-    // Xóa reference trong DonationUnit
     await DonationUnit.findByIdAndUpdate(event.donationUnit, {
       $pull: { events: event._id },
     });
@@ -208,7 +194,6 @@ exports.deleteEvent = async (req, res) => {
   }
 };
 
-// Lấy sự kiện theo đơn vị hiến máu
 exports.getEventsByDonationUnit = async (req, res) => {
   try {
     const events = await Event.find({ donationUnit: req.params.donationUnitId })
@@ -228,7 +213,6 @@ exports.getEventsByDonationUnit = async (req, res) => {
   }
 };
 
-// Lấy các sự kiện sắp diễn ra
 exports.getUpcomingEvents = async (req, res) => {
   try {
     const events = await Event.find({
@@ -251,7 +235,6 @@ exports.getUpcomingEvents = async (req, res) => {
   }
 };
 
-// Tìm kiếm sự kiện
 exports.searchEvents = async (req, res) => {
   try {
     const { keyword, status, date, unitId } = req.query;

@@ -19,8 +19,6 @@ exports.register = async (req, res) => {
   try {
     const { cccd, password, fullName, dob, sex, address, email, phone } =
       req.body;
-
-    // Check if user already exists
     const existingUser = await User.findOne({
       $or: [{ cccd }, { email }],
     });
@@ -32,7 +30,6 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Create new user
     const user = new User({
       cccd,
       password,
@@ -46,7 +43,6 @@ exports.register = async (req, res) => {
 
     await user.save();
 
-    // Generate token
     const token = generateToken(user);
 
     res.status(201).json({
@@ -77,7 +73,6 @@ exports.login = async (req, res) => {
   try {
     const { cccd, password } = req.body;
 
-    // Find user by CCCD
     const user = await User.findOne({ cccd });
 
     if (!user) {
@@ -87,7 +82,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({
@@ -96,7 +90,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Generate token
     const token = generateToken(user);
 
     res.json({

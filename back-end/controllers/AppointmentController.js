@@ -2,9 +2,8 @@ const Appointment = require('../schemas/Appointment');
 const User = require('../schemas/User');
 const Event = require('../schemas/Event');
 const Healthcheck = require('../schemas/Healthcheck');
-const ApiResponse = require('../utils/ApiResponse'); // Assuming you have a utility for API responses
+const ApiResponse = require('../utils/ApiResponse'); 
 
-// Get all appointments
 exports.getAllAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find().populate('event user healthcheck');
@@ -14,7 +13,6 @@ exports.getAllAppointments = async (req, res) => {
   }
 };
 
-// Get appointment by ID
 exports.getAppointmentById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -28,7 +26,6 @@ exports.getAppointmentById = async (req, res) => {
   }
 };
 
-// Save a new appointment
 exports.saveAppointment = async (req, res) => {
   try {
     const { username, eventId } = req.body;
@@ -62,7 +59,6 @@ exports.saveAppointment = async (req, res) => {
   }
 };
 
-// Get appointments by user
 exports.getAppointmentsByUser = async (req, res) => {
   try {
     const { username } = req.query;
@@ -78,7 +74,6 @@ exports.getAppointmentsByUser = async (req, res) => {
   }
 };
 
-// Update appointment status
 exports.updateAppointmentStatus = async (req, res) => {
   try {
     const { id, status } = req.body;
@@ -97,7 +92,6 @@ exports.updateAppointmentStatus = async (req, res) => {
   }
 };
 
-// Delete appointment
 exports.deleteAppointment = async (req, res) => {
   try {
     const { id } = req.params;

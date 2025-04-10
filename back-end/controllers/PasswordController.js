@@ -2,7 +2,6 @@ const PasswordResetToken = require('../schemas/PasswordResetToken');
 const User = require('../schemas/User');
 const ApiResponse = require('../utils/ApiResponse');
 
-// Request password reset
 exports.resetPasswordRequest = async (req, res) => {
   try {
     const { email } = req.body;
@@ -18,7 +17,6 @@ exports.resetPasswordRequest = async (req, res) => {
     });
     await token.save();
 
-    // Simulate sending email
     console.log(`Password reset token: ${token.token}`);
 
     res.status(200).json(new ApiResponse(200, 'Password reset email sent successfully'));
@@ -27,7 +25,6 @@ exports.resetPasswordRequest = async (req, res) => {
   }
 };
 
-// Reset password
 exports.resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;

@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const UserInfo = require("../schemas/UserInfo");
-const ApiResponse = require("../utils/ApiResponse"); // Utility for consistent API responses
+const ApiResponse = require("../utils/ApiResponse");
 
 // Register a new user
 exports.registerUser = async (req, res) => {

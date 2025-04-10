@@ -1,7 +1,6 @@
 const News = require('../schemas/News');
 const ApiResponse = require('../utils/ApiResponse');
 
-// Add news
 exports.createNews = async (req, res) => {
   try {
     
@@ -19,7 +18,6 @@ exports.createNews = async (req, res) => {
   }
 };
 
-// Get all news
 exports.getAllNews = async (req, res) => {
   try {
     const news = await News.find();
@@ -29,7 +27,6 @@ exports.getAllNews = async (req, res) => {
   }
 };
 
-// Get news by ID
 exports.getNewsById = async (req, res) => {
   try {
     const news = await News.findById(req.params.id);
@@ -42,7 +39,6 @@ exports.getNewsById = async (req, res) => {
   }
 };
 
-// Update news
 exports.updateNews = async (req, res) => {
   try {
     const { id } = req.params;
@@ -62,7 +58,6 @@ exports.updateNews = async (req, res) => {
   }
 };
 
-// Delete news
 exports.deleteNews = async (req, res) => {
   try {
     const { id } = req.params;

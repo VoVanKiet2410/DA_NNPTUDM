@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Faq = require('../schemas/Faq');
 const ApiResponse = require('../utils/ApiResponse');
 
-// Get all FAQs
 exports.getAllFaqs = async (req, res) => {
   try {
     const faqs = await Faq.find();
@@ -12,7 +11,6 @@ exports.getAllFaqs = async (req, res) => {
   }
 };
 
-// Add a new FAQ
 exports.addFaq = async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -24,7 +22,6 @@ exports.addFaq = async (req, res) => {
   }
 };
 
-// Update an FAQ
 exports.updateFaq = async (req, res) => {
   try {
     const { id } = req.params;
@@ -39,7 +36,6 @@ exports.updateFaq = async (req, res) => {
   }
 };
 
-// Delete an FAQ
 exports.deleteFaq = async (req, res) => {
   try {
     const { id } = req.params;

@@ -1,6 +1,5 @@
 const DonationUnit = require("../schemas/DonationUnit");
 
-// Lấy danh sách đơn vị hiến máu
 exports.getAllUnits = async (req, res) => {
   try {
     const units = await DonationUnit.find();
@@ -17,7 +16,6 @@ exports.getAllUnits = async (req, res) => {
   }
 };
 
-// Lấy chi tiết một đơn vị hiến máu
 exports.getUnitById = async (req, res) => {
   try {
     const unit = await DonationUnit.findById(req.params.id);
@@ -40,7 +38,6 @@ exports.getUnitById = async (req, res) => {
   }
 };
 
-// Tạo đơn vị hiến máu mới
 exports.createUnit = async (req, res) => {
   try {
     const { name, location, phone, email, unitPhotoUrl } = req.body;
@@ -65,7 +62,6 @@ exports.createUnit = async (req, res) => {
   }
 };
 
-// Cập nhật đơn vị hiến máu
 exports.updateUnit = async (req, res) => {
   try {
     const { name, location, phone, email, unitPhotoUrl } = req.body;
@@ -102,7 +98,6 @@ exports.updateUnit = async (req, res) => {
   }
 };
 
-// Xóa đơn vị hiến máu
 exports.deleteUnit = async (req, res) => {
   try {
     const unit = await DonationUnit.findByIdAndDelete(req.params.id);
