@@ -6,4 +6,4 @@ const FaqSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Faq', FaqSchema);
+module.exports = mongoose.model('faqs', FaqSchema);

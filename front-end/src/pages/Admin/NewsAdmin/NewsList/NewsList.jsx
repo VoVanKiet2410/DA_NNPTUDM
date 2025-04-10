@@ -1,33 +1,38 @@
 import React, { useMemo, useState } from "react";
-import { Table, Input, Popconfirm, Flex, notification } from "antd";
+import { Table, Input, Popconfirm, Flex, notification, Image } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { ROUTE_PATH } from "../../../../constants/routes";
+import axios from "axios";
+import { useEffect } from "react";
 
-// Mock data for news list
-const INITIAL_DATA = [
-  {
-    id: 1,
-    title: "Tin tức 1",
-    content: "Nội dung chi tiết của tin tức 1.",
-  },
-  {
-    id: 2,
-    title: "Tin tức 2",
-    content: "Nội dung chi tiết của tin tức 2.",
-  },
-  {
-    id: 3,
-    title: "Tin tức 3",
-    content: "Nội dung chi tiết của tin tức 3.",
-  },
-];
+const API_URL = "http://localhost:5000"; // Thêm URL gốc
 
 const NewsList = () => {
-  const [newsData, setNewsData] = useState(INITIAL_DATA);
+  const [newsData, setNewsData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const fetchNews = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/api/news`);
+      setNewsData(response.data.data);
+      setLoading(false);
+    } catch (error) {
+      notification.error({
+        message: "Lỗi",
+        description: "Không thể tải danh sách tin tức",
+      });
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
 
   // Xử lý tìm kiếm
   const filteredData = useMemo(() => {
@@ -43,14 +48,29 @@ const NewsList = () => {
   const columns = useMemo(() => {
     return [
       {
+        title: "Ảnh",
+        key: "image",
+        render: (_, record) => (
+          <Image 
+            src={record.imageUrl || "/assets/img/default.png"} 
+            alt={record.title}
+            style={{ width: 100, height: 60, objectFit: 'cover' }}
+            fallback="/assets/img/default.png"
+          />
+        ),
+      },
+      {
         title: "Tiêu đề",
         key: "title",
         dataIndex: "title",
+        ellipsis: true,
       },
       {
         title: "Nội dung",
         key: "content",
         dataIndex: "content",
+        ellipsis: true,
+        width: '40%',
       },
       {
         title: "Hành động",
@@ -60,7 +80,7 @@ const NewsList = () => {
             <Flex gap="12px">
               <Link
                 className="text-blue-500"
-                to={ROUTE_PATH.NEWS_ADMIN_EDIT(record.id)}
+                to={ROUTE_PATH.NEWS_ADMIN_EDIT(record._id)}
               >
                 Chỉnh sửa
               </Link>
@@ -68,7 +88,7 @@ const NewsList = () => {
               <Popconfirm
                 title="Xóa tin tức này?"
                 description="Bạn có chắc chắn muốn xóa tin tức này không?"
-                onConfirm={() => handleDelete(record.id)} // Gọi hàm xóa
+                onConfirm={() => handleDelete(record._id)}
               >
                 <p className="text-red-500 cursor-pointer">Xóa</p>
               </Popconfirm>
@@ -79,15 +99,22 @@ const NewsList = () => {
     ];
   }, []);
 
-  // Hàm xử lý xóa tin tức (mô phỏng)
-  const handleDelete = (id) => {
-    setTimeout(() => {
-      setNewsData((prevData) => prevData.filter((news) => news.id !== id));
+  // Hàm xử lý xóa tin tức
+  const handleDelete = async (id) => {
+    try {
+      // Sử dụng URL đầy đủ
+      await axios.delete(`${API_URL}/api/news/${id}`);
       notification.success({
         message: "Thành công",
         description: "Xóa tin tức thành công!",
       });
-    }, 500); // Simulate a delay of 0.5 seconds
+      fetchNews(); // Refresh data
+    } catch (error) {
+      notification.error({
+        message: "Lỗi",
+        description: "Không thể xóa tin tức",
+      });
+    }
   };
 
   // Hàm xử lý phân trang
@@ -115,7 +142,8 @@ const NewsList = () => {
         columns={columns}
         className="mt-4"
         dataSource={filteredData}
-        rowKey="id"
+        rowKey="_id"
+        loading={loading}
         pagination={{
           current: currentPage,
           pageSize: pageSize,

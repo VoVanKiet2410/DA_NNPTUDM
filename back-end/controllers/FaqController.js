@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Faq = require('../schemas/Faq');
 const ApiResponse = require('../utils/ApiResponse');
 

@@ -7,101 +7,156 @@ import {
   Box,
   Typography,
   Paper,
+  Snackbar,
+  Alert
 } from "@mui/material";
+import faqService from "../../../../service/faqService";
 
 const EditFaq = () => {
-  const { id } = useParams(); // Get ID from URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const [faqData, setFaqData] = useState({
     title: "",
     description: "",
   });
-  const [loading, setLoading] = useState(false); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
 
-  // Simulate fetching FAQ data on component mount
+  // Fetch FAQ data on component mount
   useEffect(() => {
-    const simulateFetchFaqDetails = () => {
-      setLoading(true); // Start loading
-      setTimeout(() => {
-        // Simulate fetched data
-        setFaqData({
-          title: `Sample FAQ Title ${id}`,
-          description: "This is a sample FAQ description.",
-        });
-        setLoading(false); // Stop loading
-      }, 1000); // Simulate a delay of 1 second
+    const fetchFaqDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await faqService.getAllFAQs();
+        const faq = response.data.find(faq => faq._id === id);
+        
+        if (faq) {
+          setFaqData({
+            title: faq.title,
+            description: faq.description,
+          });
+        } else {
+          setError("Không tìm thấy FAQ");
+        }
+      } catch (err) {
+        setError(err.message || "Đã xảy ra lỗi khi tải thông tin FAQ");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    simulateFetchFaqDetails();
+    fetchFaqDetails();
   }, [id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFaqData({ ...faqData, [name]: value }); // Update FAQ data
+    setFaqData({ ...faqData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      setLoading(true);
+      await faqService.updateFAQs(id, faqData);
+      setNotification({
+        open: true,
+        message: "FAQ đã được cập nhật thành công!",
+        severity: "success"
+      });
+      setTimeout(() => {
+        navigate("/admin/faqs");
+      }, 1500);
+    } catch (err) {
+      setNotification({
+        open: true,
+        message: err.message || "Đã xảy ra lỗi khi cập nhật FAQ",
+        severity: "error"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    setLoading(true); // Start loading
-    // Simulate a successful update without backend
-    setTimeout(() => {
-      alert("FAQ updated successfully!");
-      navigate("/admin/faqs"); // Redirect to FAQ list after "successful" update
-      setLoading(false); // Stop loading
-    }, 1000); // Simulate a delay of 1 second
+  const handleCloseNotification = () => {
+    setNotification({ ...notification, open: false });
   };
 
   return (
     <Box sx={{ padding: 3 }}>
       <Paper sx={{ padding: 3 }}>
         <Typography variant="h4" align="center" gutterBottom>
-          Update FAQ
+          Cập nhật FAQ
         </Typography>
-        {loading && <CircularProgress />} {/* Display loading indicator */}
-        {error && <Typography color="error">{error}</Typography>}{" "}
-        {/* Display error message */}
-        <form onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-4">
-            <div className="w-full">
-              <TextField
-                label="Title"
-                name="title"
-                value={faqData.title}
-                onChange={handleInputChange}
-                fullWidth
-                required
-              />
-            </div>
+        
+        {loading && <CircularProgress sx={{ display: 'block', margin: '0 auto' }} />}
+        
+        {error && (
+          <Typography color="error" align="center" sx={{ mb: 2 }}>
+            {error}
+          </Typography>
+        )}
+        
+        {!loading && !error && (
+          <form onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-4">
+              <div className="w-full">
+                <TextField
+                  label="Tiêu đề"
+                  name="title"
+                  value={faqData.title}
+                  onChange={handleInputChange}
+                  fullWidth
+                  required
+                  margin="normal"
+                />
+              </div>
 
-            <div className="w-full">
-              <TextField
-                label="Description"
-                name="description"
-                value={faqData.description}
-                onChange={handleInputChange}
-                fullWidth
-                required
-                multiline
-                rows={4}
-              />
-            </div>
+              <div className="w-full">
+                <TextField
+                  label="Mô tả"
+                  name="description"
+                  value={faqData.description}
+                  onChange={handleInputChange}
+                  fullWidth
+                  required
+                  multiline
+                  rows={4}
+                  margin="normal"
+                />
+              </div>
 
-            <div className="w-full">
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                disabled={loading}
-              >
-                {loading ? "Updating..." : "Update FAQ"}
-              </Button>
+              <div className="w-full mt-4">
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  disabled={loading}
+                >
+                  {loading ? "Đang cập nhật..." : "Cập nhật FAQ"}
+                </Button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        )}
       </Paper>
+      
+      <Snackbar 
+        open={notification.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseNotification} 
+          severity={notification.severity}
+          sx={{ width: '100%' }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

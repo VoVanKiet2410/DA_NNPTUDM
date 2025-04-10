@@ -1,41 +1,52 @@
-import React from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 function TinTuc() {
-  // Dữ liệu tĩnh thay vì gọi API
-  const newsList = [
-    {
-      id: 1,
-      images: "/assets/img/blood.png",
-      title: "Chiến dịch hiến máu toàn quốc 2025",
-      content: "Chiến dịch nhằm khuyến khích mọi người tham gia hiến máu để cứu sống hàng ngàn bệnh nhân cần máu mỗi ngày.",
-    },
-    {
-      id: 2,
-      images: "/assets/img/blood.png",
-      title: "Ngày hội hiến máu tại TP.HCM",
-      content: "Hơn 500 người đã tham gia ngày hội hiến máu tại TP.HCM, đóng góp lượng máu lớn cho cộng đồng.",
-    },
-    {
-      id: 3,
-      images: "/assets/img/blood.png",
-      title: "Câu chuyện cảm động từ người hiến máu",
-      content: "Một người hiến máu lâu năm chia sẻ hành trình giúp đỡ người khác qua từng giọt máu.",
-    },
-  ];
+  const [newsList, setNewsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:5000/api/news");
+        setNewsList(response.data.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching news:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="container my-6 mx-auto px-4 max-w-5xl text-center">
+        Đang tải tin tức...
+      </div>
+    );
+  }
 
   return (
     <div className="container my-6 mx-auto px-4 max-w-5xl">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {newsList.length > 0 &&
-          newsList.map((news) => (
-            <a
-              key={news.id}
-              href="#"
+      <h1 className="text-3xl font-bold mb-8 text-center">Tin tức mới nhất</h1>
+      
+      {newsList.length === 0 ? (
+        <div className="text-center text-gray-500">
+          Chưa có tin tức nào được đăng.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          {newsList.map((news) => (
+            <div
+              key={news._id}
               className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
             >
               <img
-                src={news.images}
-                alt={`News Image ${news.id}`}
+                src={news.imageUrl || "/assets/img/default.png"}
+                alt={news.title}
                 className="w-full h-48 object-cover rounded-t-lg"
               />
               <div className="mt-4">
@@ -45,10 +56,14 @@ function TinTuc() {
                 <p className="mt-2 text-gray-600 line-clamp-3">
                   {news.content}
                 </p>
+                <div className="mt-4 text-sm text-gray-500">
+                  Đăng bởi: {news.author} • {new Date(news.timestamp).toLocaleDateString('vi-VN')}
+                </div>
               </div>
-            </a>
+            </div>
           ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

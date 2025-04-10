@@ -1,21 +1,35 @@
 import React from "react";
 import ContentSection from "./ContentSection";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const Faq = () => {
-  const faqs = [
-    {
-      title: "Ai có thể hiến máu?",
-      description: "Người từ 18-60 tuổi, khỏe mạnh, không mắc bệnh truyền nhiễm.",
-    },
-    {
-      title: "Hiến máu có ảnh hưởng đến sức khỏe không?",
-      description: "Không, hiến máu không gây hại nếu bạn đủ điều kiện sức khỏe.",
-    },
-    {
-      title: "Tôi cần chuẩn bị gì trước khi hiến máu?",
-      description: "Ăn nhẹ, ngủ đủ giấc, và không uống rượu bia trước 24 giờ.",
-    },
-  ];
+  const [newsFaq, setFaqList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:5000/api/faq");
+        setFaqList(response.data.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching faqs:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchFaqs();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="container my-6 mx-auto px-4 max-w-5xl text-center">
+        Đang tải FAQs...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -24,11 +38,11 @@ const Faq = () => {
       </h2>
       
       <div className="space-y-4">
-        {faqs.map((it, index) => (
+        {newsFaq.map((it, index) => (
           <ContentSection
             key={index}
-            title={`${index + 1}. ${it.title}`} // Câu hỏi là title
-            description={it.description} // Truyền description là chuỗi
+            title={`${index + 1}. ${it.title}`}
+            description={it.description}
           />
         ))}
       </div>
