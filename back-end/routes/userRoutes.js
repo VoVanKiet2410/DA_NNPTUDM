@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const UserController = require("../controllers/UserController");
+const authController = require('../controllers/authController');
 
+// Phải có route này
+router.post('/login', authController.login);
 // Lấy danh sách người dùng
 router.get("/", UserController.getAllUsers);
 

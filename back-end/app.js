@@ -5,6 +5,7 @@ var logger = require('morgan');
 var mongoose = require('mongoose');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+const cors = require("cors");
 
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -23,15 +24,17 @@ mongoose.connection.on('connected',()=>{
   console.log('connected');
 })
 
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/users', usersRouter);
 app.use('/api/users', userRoutes);
 app.use('/api/password', passwordRoutes);
 app.use('/api/news', newsRoutes);
@@ -41,5 +44,20 @@ app.use('/api/donation-units', donationUnitRoutes);
 app.use('/api/blood-inventories', bloodInventoryRoutes);
 app.use('/api/health-checks', healthCheckRoutes);
 
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: `Cannot ${req.method} ${req.url}`
+  });
+});
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
+  });
+});
 module.exports = app;
