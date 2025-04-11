@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Modal, message } from "antd";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import authService from "../../service/authService";
+import appointmentService from "../../service/appointmentService";
 
 const Appointments = () => {
   const navigate = useNavigate();
   const [profileInfo, setProfileInfo] = useState(null);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { confirm } = Modal;
 
   // Hàm chuyển đổi giới tính
   const getGenderDisplay = (gender) => {
@@ -37,27 +42,64 @@ const Appointments = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await authService.getProfile();
-        console.log("Profile response in Appointments:", response); // Để debug
+  // Hàm xóa đơn đăng ký
+  const handleDeleteAppointment = () => {
+    confirm({
+      title: "Bạn có chắc chắn muốn hủy đơn đăng ký hiến máu?",
+      icon: <ExclamationCircleOutlined />,
+      content: "Hành động này không thể hoàn tác.",
+      okText: "Xác nhận",
+      okType: "danger",
+      cancelText: "Hủy",
+      async onOk() {
+        try {
+          if (appointments && appointments.length > 0) {
+            const appointmentId = appointments[0]._id;
+            await appointmentService.deleteAppointment(appointmentId);
+            await authService.updateProfile({ hasAppointment: false });
+            
+            // Cập nhật lại trạng thái
+            setProfileInfo(prev => ({
+              ...prev,
+              hasAppointment: false
+            }));
+            
+            message.success("Đã hủy đơn đăng ký hiến máu thành công!");
+          } else {
+            throw new Error("Không tìm thấy thông tin đăng ký!");
+          }
+        } catch (error) {
+          message.error("Có lỗi xảy ra: " + error.message);
+        }
+      },
+    });
+  };
 
-        // Kiểm tra và xử lý dữ liệu trả về
-        if (response) {
-          setProfileInfo(response);
-        } else {
-          throw new Error("Không lấy được thông tin profile");
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        
+        // Lấy thông tin profile
+        const profileResponse = await authService.getProfile();
+        setProfileInfo(profileResponse);
+        
+        // Nếu có appointment, lấy thông tin appointments
+        if (profileResponse?.hasAppointment) {
+          const appointmentsResponse = await appointmentService.getUserAppointments();
+          if (appointmentsResponse.success && appointmentsResponse.data) {
+            setAppointments(appointmentsResponse.data);
+          }
         }
       } catch (err) {
         setError(err.message || "Không thể tải thông tin người dùng");
-        console.error("Error fetching user profile in Appointments:", err);
+        console.error("Error fetching user data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserProfile();
+    fetchUserData();
   }, []);
 
   if (loading) {
@@ -126,6 +168,7 @@ const Appointments = () => {
             </div>
           </div>
         </div>
+        
         <div className="bg-zinc-50 rounded-lg p-4 mt-4">
           <h3 className="text-lg font-semibold mb-2 text-blue-800">
             Phiếu đăng ký hiến máu
@@ -137,24 +180,35 @@ const Appointments = () => {
               className="mb-4 w-[140px]"
             />
             {profileInfo?.hasAppointment ? (
-              <p className="text-red-700">Bạn đã đăng ký hiến máu</p>
+              <div className="text-center">
+                <p className="text-green-700 font-medium">Bạn đã đăng ký hiến máu</p>
+                {appointments && appointments.length > 0 && (
+                  <div className="mt-2 text-left mx-auto max-w-md">
+                    <p><span className="font-medium">Sự kiện:</span> {appointments[0].event?.name || "-"}</p>
+                    <p><span className="font-medium">Ngày:</span> {formatDate(appointments[0].event?.eventDate) || "-"}</p>
+                    <p><span className="font-medium">Địa điểm:</span> {appointments[0].event?.location || "-"}</p>
+                    <p><span className="font-medium">Thời gian:</span> {appointments[0].event?.eventStartTime?.slice(0, 5) || "-"} - {appointments[0].event?.eventEndTime?.slice(0, 5) || "-"}</p>
+                  </div>
+                )}
+              </div>
             ) : (
               <p className="text-zinc-500">Chưa có phiếu đăng ký hiến máu</p>
             )}
           </div>
         </div>
+        
         <div className="flex justify-center mt-6">
           {profileInfo?.hasAppointment ? (
             <button
-              onClick={() => alert("Xóa đơn đăng ký (chỉ là demo)")}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+              onClick={handleDeleteAppointment}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
             >
-              Xóa đơn đăng ký
+              Hủy đơn đăng ký
             </button>
           ) : (
             <button
               onClick={() => navigate("/events")}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
             >
               Đăng ký hiến máu
             </button>
