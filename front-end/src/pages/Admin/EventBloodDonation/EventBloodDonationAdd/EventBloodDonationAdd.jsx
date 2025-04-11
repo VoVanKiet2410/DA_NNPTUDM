@@ -180,7 +180,7 @@ const EventBloodDonationAdd = () => {
                 </Col>
               </Row>
 
-              <Form.Item
+              {/* <Form.Item
                 name="maxRegistrations"
                 label="Giới hạn đăng ký"
                 rules={[
@@ -193,6 +193,31 @@ const EventBloodDonationAdd = () => {
                 ]}
               >
                 <Input type="number" placeholder="Nhập giới hạn đăng ký" />
+              </Form.Item> */}
+              <Form.Item
+                name="maxRegistrations"
+                label="Giới hạn đăng ký"
+                rules={[
+                  { required: true, message: "Vui lòng nhập giới hạn đăng ký" },
+                  {
+                    type: "number",
+                    min: 1,
+                    message: "Giới hạn đăng ký phải lớn hơn 0",
+                  },
+                ]}
+                getValueFromEvent={(e) => {
+                  const value = parseInt(e.target.value, 10); // Chuyển đổi chuỗi thành số
+                  return isNaN(value) ? undefined : value; // Trả về undefined nếu không hợp lệ
+                }}
+              >
+                <Input
+                  type="number"
+                  placeholder="Nhập giới hạn đăng ký"
+                  onChange={(e) => {
+                    console.log("Giá trị nhập vào:", e.target.value);
+                    console.log("Kiểu dữ liệu nhập vào:", typeof e.target.value);
+                  }}
+                />
               </Form.Item>
 
               <Form.Item
