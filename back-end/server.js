@@ -7,6 +7,7 @@ const donationUnitRoutes = require("./routes/donationUnitRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const newsRoutes = require('./routes/newsRoutes');
 const faqRoutes = require('./routes/faqRoutes');
+const appointmentRoutes = require('./routes/appointmentRoutes');
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use("/api/donation-units", donationUnitRoutes);
 app.use("/api/events", eventRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/faq', faqRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

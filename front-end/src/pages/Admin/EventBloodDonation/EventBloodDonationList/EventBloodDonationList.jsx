@@ -1,10 +1,10 @@
-import { Flex, Input, Popconfirm, Table, message } from "antd"
-import React, { useEffect, useState } from "react"
-import { SearchOutlined } from "@ant-design/icons"
-import { Link } from "react-router-dom"
-import { ROUTE_PATH } from "../../../../constants/routes"
-import eventService from "../../../../service/eventService"
-import donationUnitService from "../../../../service/donationUnitService"
+import { Flex, Input, Popconfirm, Table, message } from "antd";
+import React, { useEffect, useState } from "react";
+import { SearchOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import { ROUTE_PATH } from "../../../../constants/routes";
+import eventService from "../../../../service/eventService";
+import donationUnitService from "../../../../service/donationUnitService";
 
 const EventBloodDonationList = () => {
   const [searchText, setSearchText] = useState("");
@@ -46,23 +46,6 @@ const EventBloodDonationList = () => {
     }
   };
 
-  // Lấy danh sách đơn vị hiến máu
-  const fetchDonationUnits = async () => {
-    try {
-      const response = await donationUnitService.getAllUnits();
-      if (response.success) {
-        // Chuyển đổi mảng thành object để dễ tìm kiếm
-        const unitsObj = {};
-        response.data.forEach((unit) => {
-          unitsObj[unit._id] = unit;
-        });
-        setDonationUnits(unitsObj);
-      }
-    } catch (error) {
-      message.error("Không thể tải danh sách đơn vị hiến máu");
-    }
-  };
-
   // Lấy danh sách sự kiện
   const fetchEvents = async () => {
     try {
@@ -80,17 +63,29 @@ const EventBloodDonationList = () => {
     }
   };
 
+  // Lấy danh sách đơn vị hiến máu
+  const fetchDonationUnits = async () => {
+    try {
+      const response = await donationUnitService.getAllUnits();
+      if (response.success) {
+        // Chuyển đổi mảng thành object để dễ tìm kiếm
+        const unitsObj = {};
+        response.data.forEach((unit) => {
+          unitsObj[unit._id] = unit;
+        });
+        setDonationUnits(unitsObj);
+      }
+    } catch (error) {
+      message.error("Không thể tải danh sách đơn vị hiến máu");
+    }
+  };
+
   useEffect(() => {
     fetchDonationUnits();
     fetchEvents();
   }, []);
 
   const columns = [
-    // {
-    //   title: "ID",
-    //   key: "_id",
-    //   dataIndex: "_id",
-    // },
     {
       title: "Tên sự kiện",
       key: "name",
@@ -99,7 +94,7 @@ const EventBloodDonationList = () => {
     {
       title: "Đơn vị hiến máu",
       key: "donationUnit",
-      render: (_, record) => donationUnits[record.donationUnit]?.name || "N/A",
+      render: (_, record) => record.donationUnit?.name || "N/A",
     },
     {
       title: "Địa chỉ",
